@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <a href="index.html" class="btn">Go Home</a>
+    <title>Pitch Logger</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .btn {
+            display: block;
+            width: 220px;
+            padding: 15px;
+            margin: 15px auto;
+            font-size: 18px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(45deg, green, lightgreen);
+            border: none;
+            border-radius: 12px;
+            transition: 0.3s;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+        .btn:hover {
+            background: linear-gradient(45deg, darkgreen, blue);
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e88e5;
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+
+        /* Button Group Styling */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .button-group button,
+        .button-group input,
+        .button-group select {
+            margin: 10px;
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .button-group input[type="range"] {
+            width: 250px;
+            margin: 0 15px;
+        }
+
+        .button-group button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #logPitchButton {
+            background-color: #66bb6a;
+            color: #fff;
+        }
+        #logPitchButton:hover { background-color: #43a047; }
+
+        #resetStatsButton,
+        #resetPitchLogsButton,
+        #resetPitchLocationsButton {
+            background-color: #ef5350;
+            color: #fff;
+        }
+        #resetStatsButton:hover,
+        #resetPitchLogsButton:hover,
+        #resetPitchLocationsButton:hover {
+            background-color: #d32f2f;
+        }
+
+        #undoButton {
+            background-color: #fbc02d;
+            color: #212121;
+        }
+        #undoButton:hover { background-color: #f57f17; }
+
+        #toggleUnitButton {
+            background-color: #8e24aa;
+            color: #fff;
+        }
+        #toggleUnitButton:hover { background-color: #6a1b9a; }
+
+        /* Stats Section Styling */
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+        }
+
+        .stats p {
+            font-size: 18px;
+            padding: 10px;
+            margin: 10px;
+            color: #333;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stats p:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Graph Canvas Styling */
+        canvas { 
+            margin: 20px auto;
+            max-width: 95%;
+            height: 300px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Pitch History Section */
+        .pitch-history {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pitch-history h2 {
+            font-size: 24px;
+            color: #1e88e5;
+        }
+
+        .pitch-history ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .pitch-history li {
+            padding: 8px;
+            margin: 5px;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            color: #333;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .pitch-history li:hover {
+            background-color: #bbdefb;
+            transform: scale(1.03);
+        }
+        .favorite {
+            color: #ff5722;
+            font-weight: bold;
+        }
+
+        /* Tooltip and Transition Effects */
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 8px;
+            border-radius: 5px;
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pitch Logger</h1>
+
+        <!-- Pitch Logging Section -->
+        <div class="button-group">
+            <input type="number" id="pitchSpeed" placeholder="Enter Pitch Speed (MPH)" />
+            <select id="pitchKind">
+                <option value="4SeamFastball">4SeamFastball</option>
+                <option value="2SeamFastball">2SeamFastball</option>
+                <option value="curveball">Curveball</option>
+                <option value="slider">Slider</option>
+                <option value="changeup">Changeup</option>
+                <option value="eephus">Eephus</option>
+                <option value="slurve">Slurve</option>
+                <option value="knuckleCurve">KnuckleCurve</option>
+                <option value="cutter">Cutter</option>
+                <option value="sweeper">Sweeper</option>
+                <option value="dropball">Dropball</option>
+                <option value="riser">Riser</option>
+                <option value="knuckleBall">KnuckleBall</option>
+            </select>
+            <select id="pitchLocation">
+                <option value="inside">Inside</option>
+                <option value="outside">Outside</option>
+                <option value="high">High</option>
+                <option value="low">Low</option>
+                <option value="dirt">In the Dirt</option>
+                <option value="highInside">High Inside</option>
+                <option value="lowInside">Low Inside</option>
+                <option value="lowOutside">Low Outside</option>
+                <option value="highOutside">High Outside</option>
+                <option value="middle">Middle</option>
+            </select>
+            <select id="pitchType">
+                <option value="strike">Strike</option>
+                <option value="ball">Ball</option>
+            </select>
+            <button id="logPitchButton">Log Pitch</button>
+            <button id="undoButton">Undo Pitch</button>
+        </div>
+
+        <!-- Reset Stats Section -->
+        <div class="button-group">
+            <button id="resetStatsButton">Reset Stats</button>
+            <button id="resetPitchLogsButton">Reset Pitch Logs</button>
+            <button id="resetPitchLocationsButton">Reset Pitch Locations</button>
+            <button id="toggleUnitButton">Switch to KPH</button>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats">
+            <p>Total Pitches: <span id="totalPitches">0</span></p>
+            <p>Fastest Pitch: <span id="fastestPitch">0</span> MPH</p>
+            <p>Slowest Pitch: <span id="slowestPitch">0</span> MPH</p>
+            <p>Pitch Speed Range: <span id="pitchRange">0</span> MPH</p>
+            <p>Mean Pitch: <span id="meanPitch">0.00</span> MPH</p>
+            <p>Median Pitch: <span id="medianPitch">0.00</span> MPH</p>
+            <p>Strike Percentage: <span id="strikePercentage">0.00</span>%</p>
+            <p>Fastest Strike: <span id="fastestStrike">0</span> MPH</p>
+            <p>Ball Percentage: <span id="ballPercentage">0.00</span>%</p>
+            <p>Fastest Ball: <span id="fastestBall">0</span> MPH</p>
+        </div>
+
+        <!-- Graphs -->
+        <canvas id="pitchChart"></canvas>
+        <canvas id="ballStrikeChart"></canvas>
+        <canvas id="pitchLocationChart"></canvas>
+        <canvas id="pitchTypeChart"></canvas>
+
+        <!-- Pitch History Section -->
+        <div class="pitch-history">
+            <h2>Pitch History</h2>
+            <ul id="pitchHistoryList"></ul>
+        </div>
+
+    </div>
+
+    <script>
+        const pitchSpeeds = [];
+        const pitchLogs = [];
+        const pitchLocations = [];
+        const pitchTypes = [];
+
+        const totalPitchesElement = document.getElementById('totalPitches');
+        const fastestPitchElement = document.getElementById('fastestPitch');
+        const slowestPitchElement = document.getElementById('slowestPitch');
+        const pitchRangeElement = document.getElementById('pitchRange');
+        const meanPitchElement = document.getElementById('meanPitch');
+        const medianPitchElement = document.getElementById('medianPitch');
+        const strikePercentageElement = document.getElementById('strikePercentage');
+        const fastestStrikeElement = document.getElementById('fastestStrike');
+        const ballPercentageElement = document.getElementById('ballPercentage');
+        const fastestBallElement = document.getElementById('fastestBall');
+        const pitchHistoryList = document.getElementById('pitchHistoryList');
+        const pitchChart = document.getElementById('pitchChart');
+        const ballStrikeChart = document.getElementById('ballStrikeChart');
+        const pitchLocationChart = document.getElementById('pitchLocationChart');
+        const pitchTypeChart = document.getElementById('pitchTypeChart');
+
+        let isMPH = true;
+
+        // Initialize Charts
+        const ctxPitchChart = pitchChart.getContext('2d');
+        const ctxBallStrikeChart = ballStrikeChart.getContext('2d');
+        const ctxLocationChart = pitchLocationChart.getContext('2d');
+        const ctxTypeChart = pitchTypeChart.getContext('2d');
+
+        let pitchSpeedChart = new Chart(ctxPitchChart, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Pitch Speed (MPH)',
+                    data: [],
+                    borderColor: '#66bb6a',
+                    backgroundColor: '#66bb6a',
+                    fill: false,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Speed (MPH)'
+                        }
+                    }
+                }
+            }
+        });
+
+        let ballStrikeChartInstance = new Chart(ctxBallStrikeChart, {
+            type: 'pie',
+            data: {
+                labels: ['Strikes', 'Balls'],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ['#66bb6a', '#ef5350']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        let pitchLocationChartInstance = new Chart(ctxLocationChart, {
+            type: 'bar',
+            data: {
+                labels: ['Inside', 'Outside', 'High', 'Low', 'Dirt', 'High Inside', 'Low Inside', 'Low Outside', 'High Outside', 'Middle'],
+                datasets: [{
+                    label: 'Pitch Locations',
+                    data: Array(10).fill(0),
+                    backgroundColor: '#1e88e5'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Count'
+                        }
+                    }
+                }
+            }
+        });
+
+        let pitchTypeChartInstance = new Chart(ctxTypeChart, {
+            type: 'bar',
+            data: {
+                labels: ['4SeamFastball', '2SeamFastball', 'Curveball', 'Slider', 'Changeup', 'Eephus', 'Slurve', 'KnuckleCurve', 'Cutter', 'Sweeper', 'Dropball', 'Riser', 'KnuckleBall'],
+                datasets: [{
+                    label: 'Pitch Types',
+                    data: Array(13).fill(0),
+                    backgroundColor: '#ffca28'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Count'
+                        }
+                    }
+                }
+            }
+        });
+
+        function updateStats() {
+            const totalPitches = pitchSpeeds.length;
+            const fastestPitch = Math.max(...pitchSpeeds);
+            const slowestPitch = Math.min(...pitchSpeeds);
+            const pitchRange = fastestPitch - slowestPitch;
+            const meanPitch = pitchSpeeds.reduce((sum, speed) => sum + speed, 0) / totalPitches;
+            const sortedPitches = [...pitchSpeeds].sort((a, b) => a - b);
+            const medianPitch = sortedPitches[Math.floor(totalPitches / 2)];
+            const strikes = pitchTypes.filter(type => type === 'strike').length;
+            const balls = pitchTypes.filter(type => type === 'ball').length;
+            const strikePercentage = (strikes / totalPitches) * 100;
+            const fastestStrike = Math.max(...pitchSpeeds.filter((_, index) => pitchTypes[index] === 'strike'));
+            const fastestBall = Math.max(...pitchSpeeds.filter((_, index) => pitchTypes[index] === 'ball'));
+            const ballPercentage = (balls / totalPitches) * 100;
+
+            totalPitchesElement.textContent = totalPitches;
+            fastestPitchElement.textContent = isMPH ? fastestPitch : (fastestPitch * 1.60934).toFixed(2);
+            slowestPitchElement.textContent = isMPH ? slowestPitch : (slowestPitch * 1.60934).toFixed(2);
+            pitchRangeElement.textContent = isMPH ? pitchRange : (pitchRange * 1.60934).toFixed(2);
+            meanPitchElement.textContent = isMPH ? meanPitch.toFixed(2) : (meanPitch * 1.60934).toFixed(2);
+            medianPitchElement.textContent = isMPH ? medianPitch : (medianPitch * 1.60934).toFixed(2);
+            strikePercentageElement.textContent = strikePercentage.toFixed(2);
+            fastestStrikeElement.textContent = isMPH ? fastestStrike : (fastestStrike * 1.60934).toFixed(2);
+            fastestBallElement.textContent = isMPH ? fastestBall : (fastestBall * 1.60934).toFixed(2);
+            ballPercentageElement.textContent = ballPercentage.toFixed(2);
+
+            // Update Charts
+            pitchSpeedChart.data.labels = Array.from({ length: totalPitches }, (_, i) => `Pitch ${i + 1}`);
+            pitchSpeedChart.data.datasets[0].data = pitchSpeeds;
+            pitchSpeedChart.update();
+
+            ballStrikeChartInstance.data.datasets[0].data = [strikes, balls];
+            ballStrikeChartInstance.update();
+
+            // Update pitch location counts
+            const locationCounts = pitchLocations.reduce((counts, location) => {
+                counts[location] = (counts[location] || 0) + 1;
+                return counts;
+            }, {});
+            pitchLocationChartInstance.data.datasets[0].data = [
+                locationCounts.inside || 0,
+                locationCounts.outside || 0,
+                locationCounts.high || 0,
+                locationCounts.low || 0,
+                locationCounts.dirt || 0,
+                locationCounts.highInside || 0,
+                locationCounts.lowInside || 0,
+                locationCounts.lowOutside || 0,
+                locationCounts.highOutside || 0,
+                locationCounts.middle || 0
+            ];
+            pitchLocationChartInstance.update();
+
+            // Update pitch type counts
+            const typeCounts = pitchTypes.reduce((counts, type) => {
+                counts[type] = (counts[type] || 0) + 1;
+                return counts;
+            }, {});
+            pitchTypeChartInstance.data.datasets[0].data = [
+                typeCounts['4SeamFastball'] || 0,
+                typeCounts['2SeamFastball'] || 0,
+                typeCounts['curveball'] || 0,
+                typeCounts['slider'] || 0,
+                typeCounts['changeup'] || 0,
+                typeCounts['eephus'] || 0,
+                typeCounts['slurve'] || 0,
+                typeCounts['knuckleCurve'] || 0,
+                typeCounts['cutter'] || 0,
+                typeCounts['sweeper'] || 0,
+                typeCounts['dropball'] || 0,
+                typeCounts['riser'] || 0,
+                typeCounts['knuckleBall'] || 0
+            ];
+            pitchTypeChartInstance.update();
+        }
+
+        function logPitch() {
+            const pitchSpeed = parseFloat(document.getElementById('pitchSpeed').value);
+            const pitchKind = document.getElementById('pitchKind').value;
+            const pitchLocation = document.getElementById('pitchLocation').value;
+            const pitchType = document.getElementById('pitchType').value;
+
+            if (isNaN(pitchSpeed)) return;
+
+            pitchSpeeds.push(pitchSpeed);
+            pitchLogs.push({ pitchKind, pitchLocation, pitchType });
+            pitchLocations.push(pitchLocation);
+            pitchTypes.push(pitchType);
+
+            updateStats();
+            updatePitchHistory();
+        }
+
+        function updatePitchHistory() {
+            const pitchHistoryItems = pitchLogs.map((log, index) => {
+                return `<li class="${log.pitchType === 'strike' ? 'favorite' : ''}">Pitch ${index + 1}: ${log.pitchKind} at ${log.pitchLocation} (${log.pitchType})</li>`;
+            }).join('');
+            pitchHistoryList.innerHTML = pitchHistoryItems;
+        }
+
+        function resetStats() {
+            pitchSpeeds.length = 0;
+            pitchLogs.length = 0;
+            pitchLocations.length = 0;
+            pitchTypes.length = 0;
+            updateStats();
+            updatePitchHistory();
+        }
+
+        function resetPitchLogs() {
+            pitchLogs.length = 0;
+            updatePitchHistory();
+        }
+
+        function resetPitchLocations() {
+            pitchLocations.length = 0;
+            updateStats();
+        }
+
+        function undoPitch() {
+            pitchSpeeds.pop();
+            pitchLogs.pop();
+            pitchLocations.pop();
+            pitchTypes.pop();
+            updateStats();
+            updatePitchHistory();
+        }
+
+        function toggleUnit() {
+            isMPH = !isMPH;
+            updateStats();
+        }
+
+        document.getElementById('logPitchButton').addEventListener('click', logPitch);
+        document.getElementById('resetStatsButton').addEventListener('click', resetStats);
+        document.getElementById('resetPitchLogsButton').addEventListener('click', resetPitchLogs);
+        document.getElementById('resetPitchLocationsButton').addEventListener('click', resetPitchLocations);
+        document.getElementById('undoButton').addEventListener('click', undoPitch);
+        document.getElementById('toggleUnitButton').addEventListener('click', toggleUnit);
+
+    </script>
+</body>
+</html>
