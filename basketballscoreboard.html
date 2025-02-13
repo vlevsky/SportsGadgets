@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basketball Scoreboard</title>
+  <style>
+    /* General body styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #1e1e2f;
+      margin: 0;
+      padding: 20px;
+      color: #ffffff;
+      overflow-y: auto; /* Allow scrolling */
+    }
+
+    /* Scoreboard container */
+    .scoreboard {
+      background-color: #2c2c54;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Title styling */
+    h1 {
+      margin: 0 0 20px 0;
+      font-size: 2.5em;
+      color: #ff9f43;
+    }
+
+    /* Teams section */
+    .teams {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    /* Individual team styling */
+    .team {
+      text-align: center;
+    }
+
+    .team h2 {
+      margin: 0;
+      font-size: 2em;
+      color: #ff9f43;
+    }
+
+    /* Team score styling */
+    .score {
+      font-size: 3em;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #ffffff;
+    }
+
+    /* Winning team display */
+    .winning-team {
+      font-size: 1.5em;
+      color: #2ecc71;
+      margin-top: 10px;
+    }
+
+    /* Timer section */
+    .timer {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #ffffff;
+      margin-bottom: 20px;
+      display: none; /* Hidden by default */
+    }
+
+    /* Timer controls (start, stop, reset buttons) */
+    .timer-controls {
+      margin-top: 10px;
+    }
+
+    .timer-controls button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #3498db;
+      color: #ffffff;
+      transition: background-color 0.3s ease;
+    }
+
+    .timer-controls button:hover {
+      background-color: #2980b9;
+    }
+
+    /* Timer toggle slider */
+    .timer-toggle {
+      margin-bottom: 20px;
+    }
+
+    .timer-toggle label {
+      font-size: 1.2em;
+      margin-right: 10px;
+    }
+
+    /* Rosters section */
+    .rosters {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+
+    /* Individual roster styling */
+    .roster {
+      background-color: #40407a;
+      padding: 10px;
+      border-radius: 10px;
+      width: 45%;
+    }
+
+    .roster h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.5em;
+      color: #ff9f43;
+    }
+
+    /* Table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #535c68;
+    }
+
+    th {
+      background-color: #40407a;
+      color: #ff9f43;
+    }
+
+    td {
+      background-color: #2c2c54;
+      color: #ffffff;
+    }
+
+    /* Input fields styling */
+    input[type="text"] {
+      width: 50px;
+      padding: 5px;
+      border-radius: 5px;
+      border: 1px solid #535c68;
+      background-color: #40407a;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    /* Stat buttons (3PM, 2PM, FT) */
+    .stat-buttons {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .stat-buttons button {
+      padding: 5px 10px;
+      font-size: 0.9em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #ffffff;
+      transition: background-color 0.3s ease;
+    }
+
+    .stat-buttons button:nth-child(1) {
+      background-color: #2ecc71; /* 3PM - Green */
+    }
+
+    .stat-buttons button:nth-child(2) {
+      background-color: #27ae60; /* 2PM - Darker Green */
+    }
+
+    .stat-buttons button:nth-child(3) {
+      background-color: #1e8449; /* FT - Darkest Green */
+    }
+
+    .stat-buttons button:hover {
+      opacity: 0.9;
+    }
+
+    /* Go Home button styling */
+    .go-home-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #e74c3c;
+      color: #ffffff;
+      transition: background-color 0.3s ease;
+    }
+
+    .go-home-button:hover {
+      background-color: #c0392b;
+    }
+
+    /* Copy and paste stats section */
+    .stats-code-section {
+      margin-top: 20px;
+    }
+
+    .stats-code-section textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #535c68;
+      background-color: #40407a;
+      color: #ffffff;
+      font-family: 'Arial', sans-serif;
+      resize: vertical;
+    }
+
+    .stats-code-section button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #3498db;
+      color: #ffffff;
+      transition: background-color 0.3s ease;
+    }
+
+    .stats-code-section button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div class="scoreboard">
+    <!-- Title -->
+    <h1>Basketball Scoreboard</h1>
+
+    <!-- Timer toggle slider -->
+    <div class="timer-toggle">
+      <label for="timer-slider">Show Timer:</label>
+      <input type="checkbox" id="timer-slider" onchange="toggleTimer()">
+    </div>
+
+    <!-- Teams section -->
+    <div class="teams">
+      <div class="team" id="team1">
+        <h2 contenteditable="true">Team A</h2>
+        <div class="score" id="score1">0</div>
+      </div>
+      <div class="timer" id="timer">
+        <span id="minutes">12</span>:<span id="seconds">00</span>
+        <div class="timer-controls">
+          <button onclick="startTimer()">Start</button>
+          <button onclick="stopTimer()">Stop</button>
+          <button onclick="resetTimer()">Reset</button>
+        </div>
+      </div>
+      <div class="team" id="team2">
+        <h2 contenteditable="true">Team B</h2>
+        <div class="score" id="score2">0</div>
+      </div>
+    </div>
+
+    <!-- Winning team display -->
+    <div class="winning-team" id="winning-team"></div>
+
+    <!-- Rosters section -->
+    <div class="rosters">
+      <div class="roster" id="roster1">
+        <h3>Team A Roster</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Points</th>
+              <th>Assists</th>
+              <th>Rebounds</th>
+              <th>3PM</th>
+              <th>2PM</th>
+              <th>FT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Players will be added here dynamically -->
+          </tbody>
+        </table>
+        <button onclick="addPlayer('roster1')">Add Player</button>
+      </div>
+      <div class="roster" id="roster2">
+        <h3>Team B Roster</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Points</th>
+              <th>Assists</th>
+              <th>Rebounds</th>
+              <th>3PM</th>
+              <th>2PM</th>
+              <th>FT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Players will be added here dynamically -->
+          </tbody>
+        </table>
+        <button onclick="addPlayer('roster2')">Add Player</button>
+      </div>
+    </div>
+
+    <!-- Copy and paste stats section -->
+    <div class="stats-code-section">
+      <button onclick="copyStatsInfo()">Copy Stats Info</button>
+      <button onclick="copyStatsCode()">Copy Stats Code</button>
+      <textarea id="paste-stats-code" placeholder="Paste stats code here"></textarea>
+      <button onclick="pasteStatsCode()">Paste Stats Code</button>
+    </div>
+
+    <!-- Go Home button -->
+    <button class="go-home-button" onclick="window.location.href='index.html'">Go Home</button>
+  </div>
+
+  <script>
+    // Timer variables
+    let timer;
+    let minutes = 12;
+    let seconds = 0;
+    let isTimerRunning = false;
+
+    // Timer display elements
+    const timerDisplay = document.getElementById('minutes');
+    const secondsDisplay = document.getElementById('seconds');
+    const timerContainer = document.getElementById('timer');
+
+    // Function to start the timer
+    function startTimer() {
+      if (!isTimerRunning) {
+        isTimerRunning = true;
+        timer = setInterval(updateTimer, 1000);
+      }
+    }
+
+    // Function to stop the timer
+    function stopTimer() {
+      clearInterval(timer);
+      isTimerRunning = false;
+    }
+
+    // Function to reset the timer
+    function resetTimer() {
+      stopTimer();
+      minutes = 12;
+      seconds = 0;
+      updateDisplay();
+    }
+
+    // Function to update the timer every second
+    function updateTimer() {
+      if (seconds === 0) {
+        if (minutes === 0) {
+          stopTimer();
+          return;
+        }
+        minutes--;
+        seconds = 59;
+      } else {
+        seconds--;
+      }
+      updateDisplay();
+    }
+
+    // Function to update the timer display
+    function updateDisplay() {
+      timerDisplay.textContent = String(minutes).padStart(2, '0');
+      secondsDisplay.textContent = String(seconds).padStart(2, '0');
+    }
+
+    // Function to toggle the timer visibility
+    function toggleTimer() {
+      const timerSlider = document.getElementById('timer-slider');
+      if (timerSlider.checked) {
+        timerContainer.style.display = 'block';
+      } else {
+        timerContainer.style.display = 'none';
+        stopTimer();
+      }
+    }
+
+    // Function to add a player to the roster
+    function addPlayer(rosterId) {
+      const roster = document.getElementById(rosterId).querySelector('tbody');
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td contenteditable="true">Player ${roster.children.length + 1}</td>
+        <td><input type="text" value="0" onchange="updatePoints(this)"></td>
+        <td><input type="text" value="0"></td>
+        <td><input type="text" value="0"></td>
+        <td>
+          <div class="stat-buttons">
+            <button onclick="updateStat(this, 3)">3PM</button>
+          </div>
+        </td>
+        <td>
+          <div class="stat-buttons">
+            <button onclick="updateStat(this, 2)">2PM</button>
+          </div>
+        </td>
+        <td>
+          <div class="stat-buttons">
+            <button onclick="updateStat(this, 1)">FT</button>
+          </div>
+        </td>
+      `;
+      roster.appendChild(newRow);
+    }
+
+    // Function to update points when the input changes
+    function updatePoints(input) {
+      const row = input.closest('tr');
+      const teamId = row.closest('.roster').id === 'roster1' ? 'score1' : 'score2';
+      const teamScore = document.getElementById(teamId);
+      teamScore.textContent = parseInt(teamScore.textContent) + (parseInt(input.value) || 0);
+      updateWinningTeam();
+    }
+
+    // Function to update stats (3PM, 2PM, FT)
+    function updateStat(button, pointsToAdd) {
+      const row = button.closest('tr');
+      const pointsInput = row.querySelector('td:nth-child(2) input');
+      const teamId = row.closest('.roster').id === 'roster1' ? 'score1' : 'score2';
+      const teamScore = document.getElementById(teamId);
+
+      // Update player points
+      const currentPoints = parseInt(pointsInput.value) || 0;
+      pointsInput.value = currentPoints + pointsToAdd;
+
+      // Update team score
+      teamScore.textContent = parseInt(teamScore.textContent) + pointsToAdd;
+
+      // Update winning team display
+      updateWinningTeam();
+    }
+
+    // Function to update the winning team display
+    function updateWinningTeam() {
+      const team1Score = parseInt(document.getElementById('score1').textContent);
+      const team2Score = parseInt(document.getElementById('score2').textContent);
+      const winningTeamDisplay = document.getElementById('winning-team');
+
+      if (team1Score > team2Score) {
+        winningTeamDisplay.textContent = `Team A is winning by ${team1Score - team2Score} points`;
+      } else if (team2Score > team1Score) {
+        winningTeamDisplay.textContent = `Team B is winning by ${team2Score - team1Score} points`;
+      } else {
+        winningTeamDisplay.textContent = "It's a tie!";
+      }
+    }
+
+    // Function to copy all player stats as JSON
+    function copyStatsInfo() {
+      const rosters = {
+        roster1: getRosterStats('roster1'),
+        roster2: getRosterStats('roster2'),
+      };
+      navigator.clipboard.writeText(JSON.stringify(rosters, null, 2));
+      alert('Stats info copied to clipboard!');
+    }
+
+    // Function to generate and copy a stats code (base64 encoded JSON)
+    function copyStatsCode() {
+      const rosters = {
+        roster1: getRosterStats('roster1'),
+        roster2: getRosterStats('roster2'),
+      };
+      const statsCode = btoa(JSON.stringify(rosters));
+      navigator.clipboard.writeText(statsCode);
+      alert('Stats code copied to clipboard!');
+    }
+
+    // Function to paste a stats code and restore stats
+    function pasteStatsCode() {
+      const statsCode = document.getElementById('paste-stats-code').value;
+      try {
+        const rosters = JSON.parse(atob(statsCode));
+        restoreRosterStats('roster1', rosters.roster1);
+        restoreRosterStats('roster2', rosters.roster2);
+        alert('Stats restored successfully!');
+      } catch (error) {
+        alert('Invalid stats code!');
+      }
+    }
+
+    // Function to get stats for a roster
+    function getRosterStats(rosterId) {
+      const roster = document.getElementById(rosterId).querySelector('tbody');
+      const players = [];
+      roster.querySelectorAll('tr').forEach(row => {
+        const player = {
+          name: row.querySelector('td:nth-child(1)').textContent,
+          points: row.querySelector('td:nth-child(2) input').value,
+          assists: row.querySelector('td:nth-child(3) input').value,
+          rebounds: row.querySelector('td:nth-child(4) input').value,
+          threepm: row.querySelector('td:nth-child(5) button').textContent,
+          twopm: row.querySelector('td:nth-child(6) button').textContent,
+          ft: row.querySelector('td:nth-child(7) button').textContent,
+        };
+        players.push(player);
+      });
+      return players;
+    }
+
+    // Function to restore stats for a roster
+    function restoreRosterStats(rosterId, players) {
+      const roster = document.getElementById(rosterId).querySelector('tbody');
+      roster.innerHTML = ''; // Clear existing players
+      players.forEach(player => {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+          <td contenteditable="true">${player.name}</td>
+          <td><input type="text" value="${player.points}" onchange="updatePoints(this)"></td>
+          <td><input type="text" value="${player.assists}"></td>
+          <td><input type="text" value="${player.rebounds}"></td>
+          <td>
+            <div class="stat-buttons">
+              <button onclick="updateStat(this, 3)">${player.threepm}</button>
+            </div>
+          </td>
+          <td>
+            <div class="stat-buttons">
+              <button onclick="updateStat(this, 2)">${player.twopm}</button>
+            </div>
+          </td>
+          <td>
+            <div class="stat-buttons">
+              <button onclick="updateStat(this, 1)">${player.ft}</button>
+            </div>
+          </td>
+        `;
+        roster.appendChild(newRow);
+      });
+      updateWinningTeam();
+    }
+
+    // Initialize rosters with 5 players each
+    document.addEventListener('DOMContentLoaded', () => {
+      for (let i = 0; i < 5; i++) {
+        addPlayer('roster1');
+        addPlayer('roster2');
+      }
+    });
+  </script>
+</body>
+</html>
