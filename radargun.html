@@ -16,11 +16,11 @@
             color: white;
             font-family: Arial, sans-serif;
         }
-        .btn {
+        .btn, button {
             display: block;
             width: 220px;
             padding: 15px;
-            margin: 15px auto;
+            margin: 10px auto;
             font-size: 18px;
             text-align: center;
             text-decoration: none;
@@ -32,7 +32,7 @@
             cursor: pointer;
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
         }
-        .btn:hover {
+        .btn:hover, button:hover {
             background: linear-gradient(45deg, rgb(136, 10, 10), blue);
             transform: scale(1.1);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
@@ -42,22 +42,10 @@
             padding: 10px;
             font-size: 16px;
         }
-        #speedDisplay {
-            font-size: 24px;
+        #speedDisplay, #historyDisplay {
+            font-size: 20px;
             margin-top: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 18px;
-            border: none;
-            background: #ff9800;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        button:hover {
-            background: #e68900;
+            text-align: center;
         }
     </style>
 </head>
@@ -67,19 +55,19 @@
     <input type="number" id="distanceInput" placeholder="Enter distance" value="60.5">
     <button onclick="recordTime()">Tap to Start/Stop</button>
     <div id="speedDisplay">Speed: -- mph</div>
+    <div id="historyDisplay">History: None</div>
     
     <script>
         let startTime = null;
-        let endTime = null;
-
+        let speeds = [];
+        
         function recordTime() {
             if (!startTime) {
                 startTime = performance.now();
             } else {
-                endTime = performance.now();
+                let endTime = performance.now();
                 let elapsedTime = (endTime - startTime) / 1000; // convert ms to seconds
                 startTime = null;
-                endTime = null;
                 calculateSpeed(elapsedTime);
             }
         }
@@ -91,7 +79,21 @@
                 return;
             }
             let speed = (distance / timeInSeconds) * 0.681818; // Convert feet/sec to mph
+            speeds.push(speed);
+            updateDisplay(speed);
+        }
+
+        function updateDisplay(speed) {
             document.getElementById('speedDisplay').textContent = `Speed: ${speed.toFixed(2)} mph`;
+            let minSpeed = Math.min(...speeds).toFixed(2);
+            let maxSpeed = Math.max(...speeds).toFixed(2);
+            let avgSpeed = (speeds.reduce((a, b) => a + b, 0) / speeds.length).toFixed(2);
+            document.getElementById('historyDisplay').innerHTML = `
+                History: ${speeds.map(s => s.toFixed(2)).join(', ')} mph<br>
+                Lowest Speed: ${minSpeed} mph<br>
+                Highest Speed: ${maxSpeed} mph<br>
+                Average Speed: ${avgSpeed} mph
+            `;
         }
     </script>
 </body>
