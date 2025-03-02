@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reaction Time Tester</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    .controls label {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .controls input {
+      padding: 5px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .controls button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background-color: #218838;
+    }
+
+    #buttonContainer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .reactionButton {
+      padding: 20px;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .reactionButton.blue {
+      background-color: #007bff;
+    }
+
+    #results {
+      margin-top: 20px;
+    }
+
+    #results h2 {
+      color: #333;
+    }
+
+    #averageTime {
+      font-weight: bold;
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html"><button>Go Home</button></a>
+    <h1>Reaction Time Tester</h1>
+    <div class="controls">
+      <label for="testDuration">Test Duration (seconds):</label>
+      <input type="number" id="testDuration" min="1" value="10">
+      <button id="startButton">Start Test</button>
+    </div>
+    <div id="buttonContainer"></div>
+    <div id="results">
+      <h2>Results</h2>
+      <p>Average Reaction Time: <span id="averageTime">0</span> ms</p>
+    </div>
+  </div>
+
+  <script>
+    let startTime;
+    let reactionTimes = [];
+    let testDuration;
+    let interval;
+    let currentBlueButton;
+
+    document.getElementById('startButton').addEventListener('click', startTest);
+
+    function startTest() {
+      // Reset results
+      reactionTimes = [];
+      document.getElementById('averageTime').textContent = '0';
+      document.getElementById('buttonContainer').innerHTML = '';
+
+      // Get test duration
+      testDuration = parseInt(document.getElementById('testDuration').value) * 1000;
+
+      // Create 10 buttons
+      for (let i = 0; i < 10; i++) {
+        const button = document.createElement('button');
+        button.className = 'reactionButton';
+        button.textContent = 'Click Me';
+        button.addEventListener('click', () => handleButtonClick(button));
+        document.getElementById('buttonContainer').appendChild(button);
+      }
+
+      // Start the test
+      highlightRandomButton();
+      interval = setInterval(highlightRandomButton, 1000);
+
+      // End test after the specified duration
+      setTimeout(endTest, testDuration);
+    }
+
+    function highlightRandomButton() {
+      const buttons = document.querySelectorAll('.reactionButton');
+      if (currentBlueButton) {
+        currentBlueButton.classList.remove('blue'); // Turn the previous blue button back to red
+      }
+
+      // Select a new random button to highlight
+      const randomIndex = Math.floor(Math.random() * buttons.length);
+      currentBlueButton = buttons[randomIndex];
+      currentBlueButton.classList.add('blue');
+      startTime = Date.now(); // Start timing when the button turns blue
+    }
+
+    function handleButtonClick(button) {
+      if (button.classList.contains('blue')) {
+        const reactionTime = Date.now() - startTime;
+        reactionTimes.push(reactionTime);
+        button.classList.remove('blue'); // Turn the clicked button back to red
+        highlightRandomButton(); // Highlight a new random button
+      }
+    }
+
+    function endTest() {
+      clearInterval(interval); // Stop highlighting buttons
+      const buttons = document.querySelectorAll('.reactionButton');
+      buttons.forEach(button => button.classList.remove('blue')); // Turn all buttons red
+
+      // Calculate average reaction time
+      if (reactionTimes.length > 0) {
+        const averageTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
+        document.getElementById('averageTime').textContent = averageTime.toFixed(2);
+      } else {
+        document.getElementById('averageTime').textContent = '0';
+      }
+    }
+  </script>
+</body>
+</html>
